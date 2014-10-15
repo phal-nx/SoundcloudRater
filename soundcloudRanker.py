@@ -3,18 +3,24 @@ import soundcloud
 import re
 import queue
 import threading
+import logging
 from twython import Twython
 from bcolors import BColors
 from utils import *
 
 BColors = BColors()
 #GLOBAL VARIABLES
-QUERYLENGTH = 100 #How many twitter posts to search each time this is run
+QUERYLENGTH = 1000 #How many twitter posts to search each time this is run
 QUERY = "soundcloud.com/"
+#Queue to store results
+requestcount = 0
 q = queue.Queue()
 #Setup soundcloud client
 SCClient =  soundcloud.Client(client_id = 'fc2d2bb48658c6612489eed9aaa88dc4')
 
+
+class NotATrack(Exception):
+    pass
 
 '''
 Input: Takes a soundcloud URL
@@ -46,9 +52,11 @@ def makeEntry(track,username,post,post_id):
 	#purchase_url = track.purchase_url
 	#download_url = track.download_url
 	#artwork_url = track.artwork_url
-	
+	#if isinstance(sctracktype,str) and ( sctracktype == "original" or sctracktype == "remix"):
 	return{'username':username,'post':post,'id':post_id,'soundcloudLink':soundcloudLink,'user':scuser,'title':sctitle,'duration':sctrackduration,'tracktype':sctracktype}
-
+	#else:
+	#	print("#####"+str(sctracktype)+"###")
+	#	raise Exception("NotATrack")
 '''
 Creates a list and fills it with the Soundcloud Links contained in the first QUERYLENGTH
 amount of twitter posts returned by the QUERY if they are valid (determined by checkEntry())
@@ -57,7 +65,8 @@ def populateList():
 	global QUERYLENGTH
 	global QUERY
 	global q
-	#songList = []
+	#global requestcount
+	
 
 	#App key and secret found by registering Twitter App
 	APPSECRET = "CPMs6yeXwWRqV5Yow7QmOVZzfouC2UOT1AIykCZKYwBzuUrw0b"
@@ -91,6 +100,8 @@ def resolveEntry(twitter, results,entry):
 					entry = makeEntry(track,username,post,postid)
 					print(BColors.makeRed(entry['user']) + ":\t" + BColors.makeBlue(entry['title']))
 					q.put(entry)
+				#except NotATrack:
+				#	print(BColors.makeError('ERROR: NOT A SONG ' + soundcloudLink))
 				except:
 					print(BColors.makeError('ERROR: SONG NOT FOUND ' +soundcloudLink))	
 
@@ -99,17 +110,16 @@ The main function
 '''
 def main():
 	
+	#global requestcount
 	searchQuery =  populateList()
 
-
-
 	#Print each entry
-
 	while(not searchQuery.empty()):
 		result = searchQuery.get()
 		print(BColors.makeRed(result['username']) + ":")
 		print(result['post'])
 		print(BColors.makeGreen(result['soundcloudLink']) + '\n')
+	#print(BColors.makeError("\n The total count of entries is:"+ str(requestcount)))
 '''
 #this is list implementation
 	for result in searchQuery:
