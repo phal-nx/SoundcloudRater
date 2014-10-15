@@ -1,9 +1,11 @@
 import string
 import soundcloud
 import re
+import Queue
+import threading
 from twython import Twython
 from bcolors import BColors
-
+from utils import *
 
 BColors = BColors()
 #GLOBAL VARIABLES
@@ -11,6 +13,7 @@ QUERYLENGTH = 100 #How many twitter posts to search each time this is run
 QUERY = "soundcloud.com/"
 #Setup soundcloud client
 SCClient =  soundcloud.Client(client_id = 'fc2d2bb48658c6612489eed9aaa88dc4')
+
 
 '''
 Input: Takes a soundcloud URL
@@ -25,24 +28,6 @@ def getTrackInfo(trackURL):
 		return False
 	return track 
 
-'''
-Input: Takes the expanded Soundcloud URL
-Output: Returns whether or not link is valid
-Put logic for the checking of whether the link is valid here
-TODO: Make a regular expression to ensure link is to a track and not an artist
-'''
-def checkEntry(entry):
-
-	
-	#Simpler Check w/o regex
-	if "//soundcloud.com/" in entry["expanded_url"]:
-		return True
-	return False
-'''
-        soundcloudRegex = re.compile("(soundcloud.com\/\S+\/\S+)")
-        print (str(entry["expanded_url"]) + str( re.match(soundcloudRegex,str(entry["expanded_url"]))))
-        return  re.match(soundcloudRegex,str(entry["expanded_url"])):
-'''
 
 
 '''
