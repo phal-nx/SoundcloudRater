@@ -1,11 +1,14 @@
 import string
 import soundcloud
+import re
 from twython import Twython
 from bcolors import BColors
 
+
+BColors = BColors()
 #GLOBAL VARIABLES
-queryLength = 100 #How many twitter posts to search each time this is run
-query = 'soundcloud.com/'
+QUERYLENGTH = 100 #How many twitter posts to search each time this is run
+QUERY = "soundcloud.com/"
 #Setup soundcloud client
 SCClient =  soundcloud.Client(client_id = 'fc2d2bb48658c6612489eed9aaa88dc4')
 
@@ -29,9 +32,18 @@ Put logic for the checking of whether the link is valid here
 TODO: Make a regular expression to ensure link is to a track and not an artist
 '''
 def checkEntry(entry):
+
+	
+	#Simpler Check w/o regex
 	if "//soundcloud.com/" in entry["expanded_url"]:
 		return True
 	return False
+'''
+        soundcloudRegex = re.compile("(soundcloud.com\/\S+\/\S+)")
+        print (str(entry["expanded_url"]) + str( re.match(soundcloudRegex,str(entry["expanded_url"]))))
+        return  re.match(soundcloudRegex,str(entry["expanded_url"])):
+'''
+
 
 '''
 Input: Takes a twitter post string
@@ -59,35 +71,36 @@ def makeEntry(track,username,post,post_id):
 	return{'username':username,'post':post,'id':post_id,'soundcloudLink':soundcloudLink,'user':scuser,'title':sctitle,'duration':sctrackduration,'tracktype':sctracktype}
 
 '''
-Creates a list and fills it with the Soundcloud Links contained in the first queryLength
-amount of twitter posts returned by the query if they are valid (determined by checkEntry())
+Creates a list and fills it with the Soundcloud Links contained in the first QUERYLENGTH
+amount of twitter posts returned by the QUERY if they are valid (determined by checkEntry())
 '''
 def populateList():
-	global queryLength
-	global query
+	global QUERYLENGTH
+	global QUERY
 	songList = []
 
 	#App key and secret found by registering Twitter App
 	APPSECRET = "CPMs6yeXwWRqV5Yow7QmOVZzfouC2UOT1AIykCZKYwBzuUrw0b"
 	APPKEY = 'ngJbJ1mb6uHR0oZvTO5QjPUtz'
 	twitter = Twython(APPKEY, APPSECRET)
-	results = twitter.search(q=query, lang='en',count=queryLength) #since_id = current_id_searched
+#	results = twitter.search(q='//soundcloud.com/', lang='en',count=1000) 
+	results = twitter.search(q=QUERY, lang='en',count=QUERYLENGTH) #since_id = current_id_searched
 
 	for entry in results["statuses"]:
 		for url in entry["entities"]["urls"]:
 			if(checkEntry(url)):
-				print(entry)
-				postid= 5#entry['id_str'] 
+				postid= entry["id"] 
 				username = entry["user"]["name"]
 				post = sanitizeEntry(entry["text"]) # Remove non ASCII characters
 				soundcloudLink = url["expanded_url"].split('?')[0] #Set the soundcloud link to be everything before a question mark
 				track = getTrackInfo(soundcloudLink)
-				if track:
+				if track != False:
 					try:
 						entry = makeEntry(track,username,post,postid)
-						print(BColors.makeRed(entry['user']), ":\t", BColors.makeBlue(entry['title']))
+						print(BColors.makeRed(entry['user']) + ":\t" + BColors.makeBlue(entry['title']))
 						songList.append(entry)
 					except:
+						pass
 						print(BColors.makeError('ERROR: SONG NOT FOUND ' +soundcloudLink))	
 	return songList
 
