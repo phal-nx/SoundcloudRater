@@ -3,12 +3,13 @@ Input: None
 Output: Return a dictionary of words and their values from the textfile
 ''' 
 def getWordValues():
-        infile = open("wordValues.txt","r")
-        wordValues = {} 
-        for line in infile:
-                splitline = line.split()
-                wordValues[splitline[0]] = splitline[1]
-        return wordValues
+	infile = open("wordValues.txt","r")
+	wordValues = {} 
+	for line in infile:
+		splitline = line.split()
+		wordValues[splitline[0]] = splitline[1]
+	infile.close()
+	return wordValues
 
 '''
 Input: A Track
@@ -24,8 +25,6 @@ Put logic for the checking of whether the link is valid here
 TODO: Make a regular expression to ensure link is to a track and not an artist
 '''
 def checkEntry(entry):
-
-
         #Simpler Check w/o regex
         if "//soundcloud.com/" in entry["expanded_url"]:
                 return True
@@ -43,5 +42,17 @@ Output: Sanitizes the post to only be printable characters removing emojis and o
 '''     
 def sanitizeEntry(entry):
         return str(entry.encode('ascii',errors='ignore'))[1:]
+def readinIDs():
+	idlist = list()
+	infile = open ("ids.txt",'r')
+	for line in infile:
+		idlist.append(line)
+	infile.close()	
+	return idlist
 
-
+def outputIDsToFile(entries,filename):
+	infile = open(filename,"a")
+	for entry in entries:
+		infile.write(str(entry['id'])+'\n')
+	infile.close
+		 		

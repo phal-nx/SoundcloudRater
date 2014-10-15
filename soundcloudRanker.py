@@ -104,7 +104,6 @@ def resolveEntry(twitter, results,entry):
 				#	print(BColors.makeError('ERROR: NOT A SONG ' + soundcloudLink))
 				except:
 					print(BColors.makeError('ERROR: SONG NOT FOUND ' +soundcloudLink))	
-
 '''
 The main function
 '''
@@ -112,16 +111,25 @@ def main():
 	
 	#global requestcount
 	searchQuery =  populateList()
-
+	entries = list()
+	idlist = readinIDs()
 	#Print each entry
 	while(not searchQuery.empty()):
 		result = searchQuery.get()
-		print(BColors.makeRed(result['username']) + ":")
-		print(result['post'])
-		print(BColors.makeGreen(result['soundcloudLink']) + '\n')
-	#print(BColors.makeError("\n The total count of entries is:"+ str(requestcount)))
+		if(result['id'] not in idlist):
+			entries.append(result)
+			print(BColors.makeRed(result['username']) + ":")
+			print(result['post'])
+			print(BColors.makeGreen(result['soundcloudLink']) + '\n')
+		#print(BColors.makeError("\n The total count of entries is:"+ str(requestcount)))
+	outputIDsToFile(entries,"ids.txt")
+	
+
+
+
+
 '''
-#this is list implementation
+	#this is list implementation
 	for result in searchQuery:
 		print(BColors.makeRed(result['username']) + ":")
 		print(result['post'])
