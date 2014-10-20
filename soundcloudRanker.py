@@ -1,5 +1,4 @@
 import soundcloud
-# import urllib2
 import re
 import queue
 import threading
@@ -48,7 +47,7 @@ def makeEntry(track, username, post, post_id):
         sctrackduration = track.duration
         sctracktype = track.track_type
         soundcloudLink = track.permalink_url
-
+        
         # To implement at the web level
         # purchase_url = track.purchase_url
         # download_url = track.download_url
@@ -57,10 +56,11 @@ def makeEntry(track, username, post, post_id):
         return{'username': username, 'post': post, 'id': post_id,
                'soundcloudLink': soundcloudLink, 'user': scuser,
                'title': sctitle, 'duration': sctrackduration,
-               'tracktype': sctracktype}
+               'tracktype': sctracktype, 'count': 1}
         #else:
         #       print("#####"+str(sctracktype)+"###")
         #       raise Exception("NotATrack")
+
 '''Input: None
 Creates a and fills it with the Soundcloud Links
 contained in the first QUERYLENGTH amount of
@@ -73,7 +73,6 @@ def populateList():
         global QUERYLENGTH
         global QUERY
         global q
-        #global requestcount
     
         # App key and secret found by registering Twitter App
         APPSECRET = "CPMs6yeXwWRqV5Yow7QmOVZzfouC2UOT1AIykCZKYwBzuUrw0b"
@@ -82,7 +81,7 @@ def populateList():
         results = twitter.search(q=QUERY, lang='en',count=QUERYLENGTH)  #since_id =  currentID
         
         # Threading is efficient because we're waiting on api requests 
-        threads = [threading.Thread(target=resolveEntry, args=(twitter, results, entry)) 
+        threads = [threading.Thread(target=resolveEntry, args=(results, entry)) 
                   for entry in results["statuses"]]  # Thread Pool Generator
         for thread in threads:
             thread.start()
@@ -93,37 +92,45 @@ def populateList():
         songList = q
         return songList
 
-
-def resolveEntry(twitter, results, entry):
+'''Input: twitter client, results, entry
+Extracts info and makes an entry in the queue
+from the inputted list of twitter posts
+'''
+def resolveEntry(results, entry):
         global q
+        global requestcount
         for url in entry["entities"]["urls"]:
                 if(checkEntry(url)):
+                        requestcount += 1
                         postid = entry["id"] 
                         username = entry["user"]["name"]
                         post = sanitizeEntry(entry["text"])  # Remove non ASCII characters
                         soundcloudLink = url["expanded_url"].split('?')[0] # Set the soundcloud link to be everything before a question mark
                         track = getTrackInfo(soundcloudLink)
                         if track is not False:
+                            if not songExists():
                                 try:
                                         entry = makeEntry(track, username, post, postid)
                                         logging.info(BColors.makeRed(entry['user']) + ":\t"
                                                 + BColors.makeBlue(entry['title']))
                                         q.put(entry)
-                                #except NotATrack:
-                                #       print(BColors.makeError('ERROR: NOT A SONG ' + soundcloudLink))
                                 except:
                                         logging.warning(BColors.makeError('ERROR: SONG NOT FOUND ' + soundcloudLink))     
+                            else:
+                                # Fill in with code that adds to the count
+                                # of the existing entry
+                                pass
 '''
 The main function
 '''
 
 
 def main(): 
-        # global requestcount
+        global requestcount
         searchQuery = populateList()
         entries = list()
         idlist = readinIDs()
-        # Print each entry
+        # Print each entry in the queue and populate a list called entries
         while(not searchQuery.empty()):
                 result = searchQuery.get()
                 if(result['id'] not in idlist):
@@ -131,8 +138,11 @@ def main():
                         print(BColors.makeRed(result['username']) + ":")
                         print(result['post'])
                         print(BColors.makeGreen(result['soundcloudLink']) + '\n')
-                #print(BColors.makeError("\n The total count of entries is:"+ str(requestcount)))
-        outputIDsToFile(entries, "ids.txt")
-        
+                logging.info(BColors.makeError("\n The total count of entries is:"+ str(requestcount)))
+        outputIDsToFile(entries)  # Makes file to avoid duplicate IDs
+        outputEntriesToFile(entries)  # Outputs entries to use in ranking
+        wordValues = getWordValues()
+        entriesDict = readInEntries()  # Returns a list of all current and past entries (list of dicts)
 
+        # getTopTen(entriesDict())
 main()
