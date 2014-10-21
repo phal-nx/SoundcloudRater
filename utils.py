@@ -1,4 +1,5 @@
 import logging
+import re
 import os
 idfilename = 'ids.txt'
 entriesfilename = 'entries.txt'
@@ -47,14 +48,15 @@ TODO: Make a regular expression to ensure link is to a track and not an artist
 
 def checkEntry(entry):
         #Simpler Check w/o regex
-        if "//soundcloud.com/" in entry["expanded_url"] and '/sets' not in entry['expanded_url']:
+        #if "//soundcloud.com/" in entry["expanded_url"] and '/sets' not in entry['expanded_url']:
+        #        return True
+        #return False
+
+        if type(entry) is str:
+            regex = re.compile("((http|https)://soundcloud.com\/\S+\/\S+(.$|\/$))")
+            if (bool(re.match(regex,entry))):
                 return True
         return False
-'''
-        soundcloudRegex = re.compile("(soundcloud.com\/\S+\/\S+)")
-        print (str(entry["expanded_url"]) + str( re.match(soundcloudRegex,str(entry["expanded_url"]))))
-        return  re.match(soundcloudRegex,str(entry["expanded_url"])):
-'''
 
 
 '''Input: Takes a twitter post string
@@ -97,10 +99,13 @@ Outputs all the IDs to a file to avoid duplicate results
 
 def outputEntriesToFile(entries):
         global entriesfilename
-        with open(entriesfilename,"a") as infile:
+        with open(entriesfilename,"r+") as infile:
             if os.stat(entriesfilename)[6] != 0:
-                infile.write(',')                   # If file isn't empty, adds a comma so it can add to the list
-            infile.write(str(entries))
+                #infile.write(',')                   # If file isn't empty, adds a comma so it can add to the list
+                oldEntries = eval(infile.read())
+                if oldEntries:
+                    print("TEST")
+                    infile.write(str(oldEntries + entries))
 
     
 '''Input:None
@@ -112,7 +117,8 @@ def readInEntries():
     global entriesfilename
     with open(entriesfilename,'r') as infile:
         try:
-            return eval(infile.read())
+            currentLine = eval(infile.read())
+            return currentLine
         except TypeError:
             logging.warning('Cant parse entry at '+ infile.read())
             return []

@@ -1,5 +1,4 @@
 import soundcloud
-import re
 import queue
 import threading
 import logging
@@ -100,10 +99,13 @@ def resolveEntry(results, entry):
         global q
         global requestcount
         for url in entry["entities"]["urls"]:
-                if(checkEntry(url)):
+                if(checkEntry(url['expanded_url'])):
                         requestcount += 1
-                        postid = entry["id"] 
-                        username = entry["user"]["name"]
+                        postid = entry["id"]
+                        try:
+                            username = entry["user"]["name"]
+                        except:
+                            logging.warning(username)
                         post = sanitizeEntry(entry["text"])  # Remove non ASCII characters
                         soundcloudLink = url["expanded_url"].split('?')[0] # Set the soundcloud link to be everything before a question mark
                         track = getTrackInfo(soundcloudLink)
@@ -141,8 +143,8 @@ def main():
                 logging.info(BColors.makeError("\n The total count of entries is:"+ str(requestcount)))
         outputIDsToFile(entries)  # Makes file to avoid duplicate IDs
         outputEntriesToFile(entries)  # Outputs entries to use in ranking
-        wordValues = getWordValues()
-        entriesDict = readInEntries()  # Returns a list of all current and past entries (list of dicts)
+        #wordValues = getWordValues()
+        #entriesDict = readInEntries()  # Returns a list of all current and past entries (list of dicts)
 
         # getTopTen(entriesDict())
 main()
