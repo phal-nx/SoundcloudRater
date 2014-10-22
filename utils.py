@@ -3,7 +3,7 @@ import re
 import os
 idfilename = 'ids.txt'
 entriesfilename = 'entries.txt'
-logging.basicConfig(level=logging.INFO, filename='messages.log')
+logging.basicConfig(level= logging.INFO, filename='messages.log')
 
 '''
 Input: None
@@ -35,7 +35,7 @@ TODO: Implement All
 '''
 
 
-def trackRating(track):
+def rate(track):
         tweetText = track['post']
         return 5
 

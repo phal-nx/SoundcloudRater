@@ -37,6 +37,7 @@ def getTrackInfo(trackURL):
 
 '''Input: Track, twitter username, post, soundcloudLink and post_id
 Returns a dictionary to append to the list if it works
+TODO: Implement count
 '''
 
 
@@ -77,7 +78,7 @@ def populateList():
         APPSECRET = "CPMs6yeXwWRqV5Yow7QmOVZzfouC2UOT1AIykCZKYwBzuUrw0b"
         APPKEY = 'ngJbJ1mb6uHR0oZvTO5QjPUtz'
         twitter = Twython(APPKEY, APPSECRET)
-        results = twitter.search(q=QUERY, lang='en',count=QUERYLENGTH)  #since_id =  currentID
+        results = twitter.search(q=QUERY, lang='en', count=QUERYLENGTH)  # since_id =  currentID
         
         # Threading is efficient because we're waiting on api requests 
         threads = [threading.Thread(target=resolveEntry, args=(results, entry)) 
@@ -148,11 +149,11 @@ def main():
                         print(BColors.makeRed(result['username']) + ":")
                         print(result['post'])
                         print(BColors.makeGreen(result['soundcloudLink']) + '\n')
-        logging.info(BColors.makeError("\n The total count of entries is:"+ str(requestcount)))
+        logging.info(BColors.makeError(" The total count of entries is: "+ str(requestcount)))
         outputIDsToFile(entries)  # Makes file to avoid duplicate IDs
         outputEntriesToFile(entries)  # Outputs entries to use in ranking
         #wordValues = getWordValues()
-        #entriesDict = readInEntries()  # Returns a list of all current and past entries (list of dicts)
-
+        entriesDict = readInEntries()  # Returns list of all current and past entries (list)
+        #(entry['rating'] = rate(entry) for entry in entries)
         # getTopTen(entriesDict())
 main()
