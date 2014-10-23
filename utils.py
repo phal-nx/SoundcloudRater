@@ -3,7 +3,7 @@ import re
 import os
 idfilename = 'ids.txt'
 entriesfilename = 'entries.txt'
-logging.basicConfig(filename='messages.log')
+logging.basicConfig(level=logging.INFO, filename='messages.log')
 
 '''
 Input: None
@@ -42,21 +42,13 @@ def trackRating(track):
 '''Input: Takes the expanded Soundcloud URL
 Returns whether or not link is valid
 Put logic for the checking of whether the link is valid here
-TODO: Make a regular expression to ensure link is to a track and not an artist
 '''
 
 
 def checkEntry(entry):
-        #Simpler Check w/o regex
-        #if "//soundcloud.com/" in entry["expanded_url"] and '/sets' not in entry['expanded_url']:
-        #        return True
-        #return False
-
-        if type(entry) is str:
-            regex = re.compile("((http|https)://soundcloud.com\/\S+\/\S+(.$|\/$))")
-            if (bool(re.match(regex,entry))):
-                return True
-        return False
+    if type(entry) is str:
+        return bool(re.match("((http|https)://soundcloud.com\/\S+\/\S+)", entry)) and 'sets' not in entry
+    return False
 
 
 '''Input: Takes a twitter post string
@@ -65,7 +57,7 @@ Sanitizes the post to only be printable characters removing emojis and other cha
 
 
 def sanitizeEntry(entry):
-        return str(entry.encode('ascii',errors='ignore'))[1:]
+        return str(entry.encode('ascii',errors='ignore'))[1:].replace('/m.s','/s') #Accounts for mobile links
 
 '''Input: None
 Returns a list with all ids in ids.txt
@@ -99,15 +91,24 @@ Outputs all the IDs to a file to avoid duplicate results
 
 def outputEntriesToFile(entries):
         global entriesfilename
-        with open(entriesfilename,"r+") as infile:
-            if os.stat(entriesfilename)[6] != 0:
-                #infile.write(',')                   # If file isn't empty, adds a comma so it can add to the list
-                oldEntries = eval(infile.read())
+        infile =  open(entriesfilename,"r+") 
+        oldEntries=list()
+        for line in infile:
+            oldEntries = oldEntries + eval(line)
+        if os.stat(entriesfilename)[6] != 0: #  If content in file
+            try:
                 if oldEntries:
-                    print("TEST")
-                    infile.write(str(oldEntries + entries))
+                    infile.seek(0)  # Seek to the beginning in order to overwrite not append
+                    infile.write(str(oldEntries + entries))  # Append if something exists
+                    logging.info("Outputted entries to " + entriesfilename + "succesfully")
+                    
+            except:
+                logging.warning("Unable to output entries to file" + entriesfilename)
+        else:
+            logging.info("Empty File")
+            infile.write(str(entries))  # If empty then create
+        infile.close()
 
-    
 '''Input:None
 Returns dictionary externally stored
 '''
@@ -132,3 +133,5 @@ whether by identical URL or similar Artist / Track
 
 def songExists():
     return False
+    #return (song in database)
+        

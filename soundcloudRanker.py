@@ -104,19 +104,27 @@ def resolveEntry(results, entry):
                         postid = entry["id"]
                         try:
                             username = entry["user"]["name"]
-                        except:
-                            logging.warning(username)
-                        post = sanitizeEntry(entry["text"])  # Remove non ASCII characters
+                        except KeyError:
+                            logging.warning('Couldnt store username at ' + username)
+                        except TypeError:
+                            logging.warning(entry['user'])
+                        try:
+                            post = sanitizeEntry(entry["text"])  # Remove non ASCII characters
+                        except KeyError:
+                            try:
+                                post = sanitizeEntry(entry['post'])
+                            except KeyError:
+                                logging.warning("Couldnt resolve entry at entry['text']" + str( entry))
                         soundcloudLink = url["expanded_url"].split('?')[0] # Set the soundcloud link to be everything before a question mark
                         track = getTrackInfo(soundcloudLink)
                         if track is not False:
                             if not songExists():
                                 try:
-                                        entry = makeEntry(track, username, post, postid)
-                                        logging.info(BColors.makeRed(entry['user']) + ":\t"
+                                    entry = makeEntry(track, username, post, postid)
+                                    logging.info(BColors.makeRed(entry['user']) + ":\t"
                                                 + BColors.makeBlue(entry['title']))
-                                        q.put(entry)
-                                except:
+                                    q.put(entry)
+                                except AttributeError:
                                         logging.warning(BColors.makeError('ERROR: SONG NOT FOUND ' + soundcloudLink))     
                             else:
                                 # Fill in with code that adds to the count
@@ -140,7 +148,7 @@ def main():
                         print(BColors.makeRed(result['username']) + ":")
                         print(result['post'])
                         print(BColors.makeGreen(result['soundcloudLink']) + '\n')
-                logging.info(BColors.makeError("\n The total count of entries is:"+ str(requestcount)))
+        logging.info(BColors.makeError("\n The total count of entries is:"+ str(requestcount)))
         outputIDsToFile(entries)  # Makes file to avoid duplicate IDs
         outputEntriesToFile(entries)  # Outputs entries to use in ranking
         #wordValues = getWordValues()
