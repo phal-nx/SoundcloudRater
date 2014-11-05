@@ -37,12 +37,12 @@ TODO: Implement All
 
 
 def rate(track):
-    payload = track['post']
+    payload = track['post'].strip('\n')
 #    (payload.replace(word,"") for word in track['title'].split())  # Removes all song title from post
-#    for word in track['title'].split:
-#        payload.replace(word,"")
+    for word in track['title'].split():
+        payload.replace(word,"")
     url = 'http://text-processing.com/api/sentiment/'
-    request = eval(requests.post("http://text-processing.com/api/sentiment/", {"text":payload}).text)
+    request = eval(requests.post("http://text-processing.com/api/sentiment/", {"text":payload}).text)  # Turn JSON object into Dictionary
     if(abs(float(request['probability']['pos']) - float(request['probability']['neg']) ) > 0.05):
         return request['label']  # If the difference is greater than a tolerance return result
     return 'neutral'  # Otherwise return neutral

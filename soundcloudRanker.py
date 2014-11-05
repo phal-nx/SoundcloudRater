@@ -152,9 +152,12 @@ def main():
         outputIDsToFile(entries)  # Makes file to avoid duplicate IDs
         outputEntriesToFile(entries)  # Outputs entries to use in ranking
         #wordValues = getWordValues()
-       # (entry['rating'] = rate(entry) for entry in entries)
+        #[(entry["rating"] = rate(entry)) for entry in entries]
         
         for entry in entries:
+            entry['rating'] = rate(entry)
+            
+       # print (str(entry['post']) + ' has a rating of: ' + entry['rating'])
             print (str(entry['post']) + " has a rating of: " + str(rate(entry)) + "\n")
         
         # getTopTen(entriesDict())
