@@ -1,5 +1,6 @@
 import logging
 import re
+import requests
 import os
 idfilename = 'ids.txt'
 entriesfilename = 'entries.txt'
@@ -36,8 +37,19 @@ TODO: Implement All
 
 
 def rate(track):
-        tweetText = track['post']
-        return 5
+    payload = track['post']
+#    (payload.replace(word,"") for word in track['title'].split())  # Removes all song title from post
+#    for word in track['title'].split:
+#        payload.replace(word,"")
+    url = 'http://text-processing.com/api/sentiment/'
+    request = eval(requests.post("http://text-processing.com/api/sentiment/", {"text":payload}).text)
+    if(abs(float(request['probability']['pos']) - float(request['probability']['neg']) ) > 0.05):
+        return request['label']  # If the difference is greater than a tolerance return result
+    return 'neutral'  # Otherwise return neutral
+
+#   return 10 * (rateEntry['probability']['pos'] - rateEntry['probability']['neg']) + 5
+# ^^ Above returns a number between 1 and 10 ^^
+
 
 '''Input: Takes the expanded Soundcloud URL
 Returns whether or not link is valid
