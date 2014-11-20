@@ -1,10 +1,15 @@
+from textblob import TextBlob
+from bcolors import BColors
 import logging
 import re
 import requests
 import os
+
+BColors1 = BColors()
 idfilename = 'ids.txt'
 entriesfilename = 'entries.txt'
 logging.basicConfig(level= logging.INFO, filename='messages.log')
+TOLERANCE = 0.1
 
 '''
 Input: None
@@ -27,8 +32,11 @@ Return list with top 10 songs
 TODO
 '''
 def getTopTen(allEntries):
-    for entry in allEntries:
-        pass
+    sortedList = sorted(allEntries, key=itemgetter('count')) 
+    topten=list()
+    for i in range(10):
+        topten.append(sortedList[i])
+    return topten
 
 '''Input: A Track
 The rating of a track
@@ -37,6 +45,21 @@ TODO: Implement All
 
 
 def rate(track):
+    payload = track['post'].strip('\n')
+    
+    for word in track['title'].split() + [track['username']]:
+        payload.replace(word,"")
+        
+    review = TextBlob(payload)
+
+    if(review.sentiment.polarity > TOLERANCE):
+        return 'pos', review.sentiment.polarity
+    elif(review.sentiment.polarity < 0-TOLERANCE):
+        return 'neg', review.sentiment.polarity
+    return 'neutral', review.sentiment.polarity
+
+
+def rate2(track):
     payload = track['post'].strip('\n')
 #    (payload.replace(word,"") for word in track['title'].split())  # Removes all song title from post
     for word in track['title'].split():
@@ -47,8 +70,15 @@ def rate(track):
         return request['label']  # If the difference is greater than a tolerance return result
     return 'neutral'  # Otherwise return neutral
 
-#   return 10 * (rateEntry['probability']['pos'] - rateEntry['probability']['neg']) + 5
-# ^^ Above returns a number between 1 and 10 ^^
+
+
+'''Input: None
+Removes files from Disk
+'''
+
+def removeFiles():
+    open(idfilename, 'w').close()
+    open(entriesfilename, 'w').close()
 
 
 '''Input: Takes the expanded Soundcloud URL
@@ -142,4 +172,31 @@ whether by identical URL or similar Artist / Track
 def songExists():
     return False
     #return (song in database)
-        
+       
+'''Input: None
+Outputs Help info
+'''
+
+def printHelp():
+        print("Soundcloud Ranker v 0.1. Phil Leonowens")
+        print("1.)"," query twitter for entries")
+        print('2.)'," Read in entries from File")
+        print('3.)',' output entries to file')
+        print('4.)',' rate current entries')
+        print('5.)',' remove entries file and idlist file')
+        print('6.)',' clear entries and idlist from RAM')
+        print('7.)',' print top 10')
+        print('p)',' print list of entries')
+        print('c)',' clear')
+        print('h)',' help')
+        print('q)',' quit')
+        '''
+        print(BColors.makeRed("Soundcloud Ranker v 0.1. Phil Leonowens"))
+        print(BColors.makeError("1.)")," query twitter for entries")
+        print(BColors.makeError('2.)')," Read in entries from File")
+        print(BColors.makeError('3.)'),' output entries to file')
+        print(BColors.makeError('4.)'),' rate current entries')
+        print(BColors.makeError('5.)'),' remove entries file and idlist file')
+        print(BColors.makeError('6.)'),' clear entries and idlist from RAM')
+        print(BColors.makeError('7.)'),' print top 10')
+        '''

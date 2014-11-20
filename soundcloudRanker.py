@@ -2,6 +2,8 @@ import soundcloud
 import queue
 import threading
 import logging
+import subprocess
+from operator import itemgetter
 from twython import Twython
 from bcolors import BColors
 from utils import *
@@ -131,34 +133,95 @@ The main function
 
 
 def main(): 
-        searchQuery = populateList()
+        # Init stuff
         entries = list()
         idlist = readinIDs()
-        # Print each entry in the queue and populate a list called entries
-        while(not searchQuery.empty()):
-            result = searchQuery.get()
-            if(result['id'] not in idlist):
-                entries.append(result)
-                print(BColors.makeRed(result['username']) + ":")
-                print(result['post'])
-                print(BColors.makeGreen(result['soundcloudLink']) + '\n')
-        allEntries = readInEntries()+entries  # Returns list of all current and past entries (list)
-        while(not repeatedEntries.empty()):  # Aquire all duplicate songs
-            repeatedEntry = repeatedEntries.get()
-            #allEntries['repeatedEntry]['count'] += 1
-            pass
 
-        logging.info(BColors.makeError(" The total count of entries is: %s" % str(requestcount)))
-        outputIDsToFile(entries)  # Makes file to avoid duplicate IDs
-        outputEntriesToFile(entries)  # Outputs entries to use in ranking
-        #wordValues = getWordValues()
-        #[(entry["rating"] = rate(entry)) for entry in entries]
-        
-        for entry in entries:
-            entry['rating'] = rate(entry)
+        command = ''
+
+        printHelp()
+        while(command != 'q'):
+            command = input("Enter a command:")
+
+            # h. Help
+            if(command == 'h'):
+                printHelp()
+            # 1. Populate List
+            if(command == '1'):
+                entriesAdded=0
+                repeatEntries=0
+                searchQuery = populateList()
+                # Print each entry in the queue and populate a list called entries
+                while(not searchQuery.empty()):
+                    result = searchQuery.get()
+                    if(result['id'] not in idlist):
+                        entriesAdded+= 1
+                        entries.append(result)
+                        idlist.append(result['id'])
+                    else:
+                        repeatEntries+=1
+                print(BColors.makeGreen(str(entriesAdded)), "entries added from Twitter Query. Total entries:", BColors.makeRed(str(len(entries))))
+                print(BColors.makeError(str(repeatEntries)), "duplicate entries")
+            # P. Print List
+            if command == 'p':
+                if not entries:
+                    print( "Entries Not Populated")
+                for result in entries:
+                        print(BColors.makeRed(result['username']) + ":")
+                        print(result['post'])
+                        print(BColors.makeGreen(result['soundcloudLink']) + '\n')
+                print(BColors.makeGreen(str(len(entries))), "entries printed out.")
+
+
+            # 2 Read in Entries from file
+            if command == '2':
+                if not entries:
+                    print(BColors.makeBlue("All entries in RAM are from file"))
+                entries = readInEntries()+entries  # Returns list of all current and past entries (list)
+                if not entries:
+                    print(BColors.makeGreen("No entries in file"))
+                print(BColors.makeError(str(len(entries))), "entries added")
+                while(not repeatedEntries.empty()):  # Aquire all duplicate songs
+                    repeatedEntry = repeatedEntries.get()
+                #allEntries['repeatedEntry]['count'] += 1
+                
+
+            # 3 Output Entries to File
+            logging.info(BColors.makeError(" The total count of entries is: %s" % str(requestcount)))
+            if command == '3': 
+                if(entries):
+                    outputIDsToFile(entries)  # Makes file to avoid duplicate IDs
+                    outputEntriesToFile(entries)  # Outputs entries to use in ranking
+                    # wordValues = getWordValues()
+                else:
+                    print( BColors.makeError("Entries Not Populated"))
             
-       # print (str(entry['post']) + ' has a rating of: ' + entry['rating'])
-            print (str(entry['post']) + " has a rating of: " + str(rate(entry)) + "\n")
-        
-        # getTopTen(entriesDict())
-main()
+            # 4 Rate Current Entries
+            if command=='4':
+                if not entries :
+                    print("You must populate entries first")
+                for entry in entries:
+                    entry['rating'], entry['score'] = rate(entry)
+                    
+                    print (BColors.makeHeader(entry['post']), '\n', " has a rating of:", BColors.makeBlue(str(round(entry['score'],2))) , entry['rating'], "\n")
+            # 5 Erase idlist and entries from file
+            if command=='5':
+                removeFiles()
+            # 6 Erase idlist and entries from RAM
+            if command == '6':
+                entries=list()
+                idlist=list()
+            # c Clear
+            if command =='c':
+                subprocess.call('clear')
+                printHelp()
+            # 7 Get Top 10
+            if command == '8':
+                for rank,entry in enumerate(getTopTen(entries)):
+                    print (rank, entry['title'])
+
+
+
+
+if __name__ == '__main__':
+    main()
