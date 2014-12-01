@@ -1,3 +1,4 @@
+import pdb
 import soundcloud
 import queue
 import threading
@@ -51,17 +52,17 @@ def makeEntry(track, username, post, post_id):
         sctracktype = track.track_type
         soundcloudLink = track.permalink_url
         sc_id = track.id
-        date = 0 #now() 
+        date = datetime.now() 
+        artwork_url = track.artwork_url
         # To implement at the web level
         # purchase_url = track.purchase_url
         # download_url = track.download_url
-        # artwork_url = track.artwork_url
         # if isinstance(sctracktype,str) and ( sctracktype == "original" or sctracktype == "remix"):
         return{'username': username, 'post': post, 'id': post_id,
                'soundcloudLink': soundcloudLink, 'user': scuser,
                'title': sctitle, 'duration': sctrackduration,
                'tracktype': sctracktype, 'scid': sc_id, 'count': 1,
-               'date': date}
+               'date': date,'artwork' : artwork_url}
 
 '''Input: None
 Creates a and fills it with the Soundcloud Links
@@ -127,23 +128,16 @@ def resolveEntry(results, entry):
                         else:
                             repeatedEntries.put(track['user']+'\t'+track['title'])
 
-
 '''
-Input: entries (optional)
-Output: Returns all entries in file and RAM
+Input:None
+Runs commands to be executed when updating DB automatically
 '''
-def getAllEntries(entries=[]):        
-    if not entries:
-        print(BColors.makeBlue("All entries in RAM are from file"))
-    allEntries = readInEntries()+entries  # Returns list of all current and past entries (list)
-    if not entries:
-        print(BColors.makeGreen("No entries in file"))
-    print(BColors.makeError(str(len(entries))), "entries added")
-    return allEntries
-    #while(not repeatedEntries.empty()):  # Aquire all duplicate songs
-    #    repeatedEntry = repeatedEntries.get()
-    #allEntries['repeatedEntry]['count'] += 1
+def update():
+    ents,ids = populateEntries(getAllIDs())  # First reads in new entries from twitter
+    rateEntries(ents)  # Rates those entries
 
+    outputIDsToFile(ents)  # Saves idlist to file
+    outputEntriesToFile(ents)  # Saves entries to file
 '''
 Input: entries
 Rates all entries
@@ -151,10 +145,38 @@ Rates all entries
 def rateEntries(entries):
     if not entries :
         print("You must populate entries first")
-    unratedEntries = (entry for entry in entries if 'rating' not in entry)
-    for entry in unratedEntries:
-        entry['rating'], entry['score'] = rate(entry)
-        print (BColors.makeHeader(entry['post']), '\n', " has a rating of:", BColors.makeBlue(str(round(entry['score'],2))) , entry['rating'], "\n")
+    unratedEntries = [entry for entry in entries if 'rating' not in entry]
+    if unratedEntries:
+        for entry in unratedEntries:
+            entry['rating'], entry['score'] = rate(entry)
+            print (BColors.makeHeader(entry['post']), '\n', " has a rating of:", BColors.makeBlue(str(round(entry['score'],2))) , entry['rating'], "\n")
+    else:
+        print(BColors.makeRedText('All Entries are already rated'))
+    print(BColors.makeGreen(str(len(list(unratedEntries)))),'entries rated.')
+
+'''
+
+'''
+def populateEntries(existingIDs): 
+    entriesAdded=0
+    repeatEntries=0
+    searchQuery = populateList()
+    entriesToAdd = list()
+    idlistToAdd = list()
+    # Print each entry in the queue and populate a list called entries
+    while(not searchQuery.empty()):
+        result = searchQuery.get()
+        if(result['id'] not in existingIDs):
+            entriesAdded+= 1
+            entriesToAdd.append(result)
+            idlistToAdd.append(result['id'])
+        else:
+            repeatEntries+=1
+    #pdb.set_trace()
+    print(BColors.makeGreen(str(entriesAdded)), "entries added from Twitter Query. Total entries in RAM + File:", BColors.makeRed(str(entriesAdded+len(existingIDs))))
+    print(BColors.makeRedText(str(repeatEntries)), "duplicate entries")
+    return entriesToAdd, idlistToAdd
+
 
 '''
 The main function
@@ -164,7 +186,7 @@ The main function
 def main(): 
         # Init stuff
         entries = list()
-        idlist = readinIDs()
+        idlist = getAllIDs() # list()
 
         command = ''
 
@@ -175,8 +197,13 @@ def main():
             # h. Help
             if(command == 'h'):
                 printHelp()
-            # 1. Populate List
+         
+         # 1. Populate List
             if(command == '1'):
+                ents,ids = populateEntries(idlist)
+                entries += ents
+                idlist += ids
+                '''
                 entriesAdded=0
                 repeatEntries=0
                 searchQuery = populateList()
@@ -190,12 +217,13 @@ def main():
                     else:
                         repeatEntries+=1
                 print(BColors.makeGreen(str(entriesAdded)), "entries added from Twitter Query. Total entries:", BColors.makeRed(str(len(entries))))
-                print(BColors.makeError(str(repeatEntries)), "duplicate entries")
+                print(BColors.makeRedText(str(repeatEntries)), "duplicate entries")
+                '''
 
-
-            # 2 Read in Entries from file
+            # 2 Read in Entries from file (Overwrites RAM)
             if command == '2' :
                 entries = getAllEntries(entries)
+                idlist = getAllIDs()
 
             # 3 Output Entries to File
             logging.info(BColors.makeError(" The total count of entries is: %s" % str(requestcount)))
@@ -222,6 +250,9 @@ def main():
             if command == '8':
                 for rank,entry in enumerate(getTopTen(entries)):
                     print (rank, entry['title'])
+            # U Update database (Run Chronologically)
+            if command == 'u':
+               update() 
 
             # P. Print List
             if command == 'p':
@@ -230,7 +261,7 @@ def main():
                 for result in entries:
                         print(BColors.makeRed(result['username']) + ":")
                         print(result['post'])
-                        print(BColors.makeGreen(result['soundcloudLink']) + '\n')
+                        print(BColors.makeBlue(result['soundcloudLink']) + '\n')
                 print(BColors.makeGreen(str(len(entries))), "entries printed out.")
 
             # c Clear

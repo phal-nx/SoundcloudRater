@@ -8,7 +8,7 @@ import requests
 import os
 
 
-BColors1 = BColors()
+BC = BColors()
 idfilename = 'ids.txt'
 entriesfilename = 'entries.txt'
 logging.basicConfig(level= logging.INFO, filename='messages.log')
@@ -68,7 +68,7 @@ def getTopTen(allEntries):
             entryScore = entry['score']
             entry['hot'] = hot(entryScore, entryDate)
     except:
-        print(BColors.makeError("You must rate all tracks first"))
+        print(BC.makeError("You must rate all tracks first"))
         return list()
     topTen = sorted(topEntries, key=itemgetter('hot'))[:10]
     return topTen
@@ -147,6 +147,34 @@ def readinIDs():
         infile.close()  
         return idlist
 
+'''
+Input: ids (optional)
+Output: Returns all entries in file and RAM
+'''
+def getAllIDs(ids=[]):
+    readIDs = readinIDs()
+    allIDs = [ID for ID in readIDs if ID not in ids]
+    return allIDs + ids
+
+'''
+Input: entries (optional)
+Output: Returns all entries in file and RAM
+'''
+def getAllEntries(entries=[]):        
+    if not entries:
+        print(BC.makeBlue("No entries are currently in RAM. All will be from File"))
+    
+    readEntries = readInEntries()
+    allEntries = [entry for entry in readInEntries() if entry not in entries]  # Returns list of all current and past entries (list)
+    
+    if not readEntries:
+        print(BC.makeGreen("No entries in file"))
+    print(BC.makeError(str(len(allEntries))), "entries added")
+    return allEntries + entries
+    #while(not repeatedEntries.empty()):  # Aquire all duplicate songs
+    #    repeatedEntry = repeatedEntries.get()
+    #allEntries['repeatedEntry]['count'] += 1
+
 '''Input: entries and the filename to output to
 Outputs all the IDs to a file to avoid duplicate results
 '''
@@ -175,7 +203,7 @@ def outputEntriesToFile(entries):
                 infile.seek(0)
                 infile.write(str(entries))  # If empty then create
             logging.info("Outputted entries to  %s succesfully" % entriesfilename)
-            print("Outputted entries to  %s succesfully" % BColors.makeRed(entriesfilename))
+            print("Outputted entries to  %s succesfully" % BC.makeRed(entriesfilename))
             infile.close()
                 
         except:
@@ -211,26 +239,17 @@ def songExists():
 Outputs Help info
 '''
 
-def printHelp():
-        print("Soundcloud Ranker v 0.1. Phil Leonowens")
-        print("1.)"," query twitter for entries")
-        print('2.)'," Read in entries from File")
-        print('3.)',' output entries to file')
-        print('4.)',' rate current entries')
-        print('5.)',' remove entries file and idlist file')
-        print('6.)',' clear entries and idlist from RAM')
-        print('7.)',' print top 10')
-        print('p)',' print list of entries')
-        print('c)',' clear')
-        print('h)',' help')
-        print('q)',' quit')
-        '''
-        print(BColors.makeRed("Soundcloud Ranker v 0.1. Phil Leonowens"))
-        print(BColors.makeError("1.)")," query twitter for entries")
-        print(BColors.makeError('2.)')," Read in entries from File")
-        print(BColors.makeError('3.)'),' output entries to file')
-        print(BColors.makeError('4.)'),' rate current entries')
-        print(BColors.makeError('5.)'),' remove entries file and idlist file')
-        print(BColors.makeError('6.)'),' clear entries and idlist from RAM')
-        print(BColors.makeError('7.)'),' print top 10')
-        '''
+def printHelp(): 
+        print(BC.makeRed("\nSoundcloud Ranker v 0.1. Phil Leonowens\n"))
+        print(BC.makeRedText("1.)")," query twitter for entries")
+        print(BC.makeRedText('2.)')," Read in entries from File")
+        print(BC.makeRedText('3.)'),' output entries to file')
+        print(BC.makeRedText('4.)'),' rate current entries')
+        print(BC.makeRedText('5.)'),' remove entries file and idlist file')
+        print(BC.makeRedText('6.)'),' clear entries and idlist from RAM')
+        print(BC.makeRedText('7.)'),' print top 10')
+       
+        print(BC.makeGreen('p)'),' print list of entries')
+        print(BC.makeGreen('c)'),' clear')
+        print(BC.makeGreen('h)'),' help')
+        print(BC.makeGreen('q)'),' quit')
