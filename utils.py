@@ -1,15 +1,41 @@
 from textblob import TextBlob
 from bcolors import BColors
+from math import log
+from datetime import datetime, timedelta
 import logging
 import re
 import requests
 import os
+
 
 BColors1 = BColors()
 idfilename = 'ids.txt'
 entriesfilename = 'entries.txt'
 logging.basicConfig(level= logging.INFO, filename='messages.log')
 TOLERANCE = 0.1
+SONGSTOASSESS = 50
+epoch = datetime(1970, 1, 1)
+
+
+'''
+Input: A Date
+Returns the number of seconds from the epoch to date.
+'''
+def epoch_seconds(date):
+    td = date - epoch
+    return td.days * 86400 + td.seconds + (float(td.microseconds) / 1000000)
+
+
+'''The hot formula. Should match the equivalent function in postgres.
+Input: Score of entry, date of entry
+Output: Hot score
+'''
+def hot(score, date):
+    order = log(max(abs(score), 1), 10)
+    sign = 1 if score > 0 else -1 if score < 0 else 0
+    seconds = epoch_seconds(date) - 1134028003
+    return round(order + sign * seconds / 45000, 7)
+
 
 '''
 Input: None
@@ -34,9 +60,18 @@ TODO
 def getTopTen(allEntries):
     sortedList = sorted(allEntries, key=itemgetter('count')) 
     topten=list()
-    for i in range(10):
-        topten.append(sortedList[i])
-    return topten
+    for i in range(SONGSTOASSESS):
+        topEntries.append(sortedList[i])
+    try:
+        for entry in topEntries:
+            entryDate = entry['date']
+            entryScore = entry['score']
+            entry['hot'] = hot(entryScore, entryDate)
+    except:
+        print(BColors.makeError("You must rate all tracks first"))
+        return list()
+    topTen = sorted(topEntries, key=itemgetter('hot'))[:10]
+    return topTen
 
 '''Input: A Track
 The rating of a track
@@ -115,13 +150,11 @@ def readinIDs():
 '''Input: entries and the filename to output to
 Outputs all the IDs to a file to avoid duplicate results
 '''
-
-
 def outputIDsToFile(entries):
         infile = open(idfilename,"a")
         for entry in entries:
                 infile.write(str(entry['id'])+'\n')
-        infile.close
+        infile.close()
                                 
 
 '''Input: entries and the filename to output to
@@ -132,20 +165,21 @@ Outputs all the IDs to a file to avoid duplicate results
 def outputEntriesToFile(entries):
         infile =  open(entriesfilename,"r+") 
         oldEntries= readInEntries()
-        if os.stat(entriesfilename)[6] != 0: #  If content in file
-            try:
-                if oldEntries:
-                    infile.seek(0)  # Seek to the beginning in order to overwrite not append
-                    infile.write(str(oldEntries + entries))  # Append if something exists
-                    logging.info("Outputted entries to  %s succesfully" % entriesfilename)
-                else:
-                    logging.info("No old files")
-                    infile.seek(0)
-                    infile.write(str(entries))  # If empty then create
-                infile.close()
-                    
-            except:
-                logging.warning("Unable to output entries to file %s " % entriesfilename)
+        #if os.stat(entriesfilename)[6] != 0: #  If content in file
+        try:
+            if oldEntries:
+                infile.seek(0)  # Seek to the beginning in order to overwrite not append
+                infile.write(str(oldEntries + entries))  # Append if something exists
+            else:
+                logging.info("No old files")
+                infile.seek(0)
+                infile.write(str(entries))  # If empty then create
+            logging.info("Outputted entries to  %s succesfully" % entriesfilename)
+            print("Outputted entries to  %s succesfully" % BColors.makeRed(entriesfilename))
+            infile.close()
+                
+        except:
+            logging.warning("Unable to output entries to file %s " % entriesfilename)
         
 '''Input:None
 Returns dictionary externally stored

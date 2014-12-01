@@ -3,6 +3,7 @@ import queue
 import threading
 import logging
 import subprocess
+from datetime import datetime
 from operator import itemgetter
 from twython import Twython
 from bcolors import BColors
@@ -50,6 +51,7 @@ def makeEntry(track, username, post, post_id):
         sctracktype = track.track_type
         soundcloudLink = track.permalink_url
         sc_id = track.id
+        date = 0 #now() 
         # To implement at the web level
         # purchase_url = track.purchase_url
         # download_url = track.download_url
@@ -58,10 +60,8 @@ def makeEntry(track, username, post, post_id):
         return{'username': username, 'post': post, 'id': post_id,
                'soundcloudLink': soundcloudLink, 'user': scuser,
                'title': sctitle, 'duration': sctrackduration,
-               'tracktype': sctracktype, 'scid': sc_id, 'count': 1}
-        #else:
-        #       print("#####"+str(sctracktype)+"###")
-        #       raise Exception("NotATrack")
+               'tracktype': sctracktype, 'scid': sc_id, 'count': 1,
+               'date': date}
 
 '''Input: None
 Creates a and fills it with the Soundcloud Links
@@ -127,6 +127,35 @@ def resolveEntry(results, entry):
                         else:
                             repeatedEntries.put(track['user']+'\t'+track['title'])
 
+
+'''
+Input: entries (optional)
+Output: Returns all entries in file and RAM
+'''
+def getAllEntries(entries=[]):        
+    if not entries:
+        print(BColors.makeBlue("All entries in RAM are from file"))
+    allEntries = readInEntries()+entries  # Returns list of all current and past entries (list)
+    if not entries:
+        print(BColors.makeGreen("No entries in file"))
+    print(BColors.makeError(str(len(entries))), "entries added")
+    return allEntries
+    #while(not repeatedEntries.empty()):  # Aquire all duplicate songs
+    #    repeatedEntry = repeatedEntries.get()
+    #allEntries['repeatedEntry]['count'] += 1
+
+'''
+Input: entries
+Rates all entries
+'''
+def rateEntries(entries):
+    if not entries :
+        print("You must populate entries first")
+    unratedEntries = (entry for entry in entries if 'rating' not in entry)
+    for entry in unratedEntries:
+        entry['rating'], entry['score'] = rate(entry)
+        print (BColors.makeHeader(entry['post']), '\n', " has a rating of:", BColors.makeBlue(str(round(entry['score'],2))) , entry['rating'], "\n")
+
 '''
 The main function
 '''
@@ -162,29 +191,11 @@ def main():
                         repeatEntries+=1
                 print(BColors.makeGreen(str(entriesAdded)), "entries added from Twitter Query. Total entries:", BColors.makeRed(str(len(entries))))
                 print(BColors.makeError(str(repeatEntries)), "duplicate entries")
-            # P. Print List
-            if command == 'p':
-                if not entries:
-                    print( "Entries Not Populated")
-                for result in entries:
-                        print(BColors.makeRed(result['username']) + ":")
-                        print(result['post'])
-                        print(BColors.makeGreen(result['soundcloudLink']) + '\n')
-                print(BColors.makeGreen(str(len(entries))), "entries printed out.")
 
 
             # 2 Read in Entries from file
-            if command == '2':
-                if not entries:
-                    print(BColors.makeBlue("All entries in RAM are from file"))
-                entries = readInEntries()+entries  # Returns list of all current and past entries (list)
-                if not entries:
-                    print(BColors.makeGreen("No entries in file"))
-                print(BColors.makeError(str(len(entries))), "entries added")
-                while(not repeatedEntries.empty()):  # Aquire all duplicate songs
-                    repeatedEntry = repeatedEntries.get()
-                #allEntries['repeatedEntry]['count'] += 1
-                
+            if command == '2' :
+                entries = getAllEntries(entries)
 
             # 3 Output Entries to File
             logging.info(BColors.makeError(" The total count of entries is: %s" % str(requestcount)))
@@ -198,12 +209,8 @@ def main():
             
             # 4 Rate Current Entries
             if command=='4':
-                if not entries :
-                    print("You must populate entries first")
-                for entry in entries:
-                    entry['rating'], entry['score'] = rate(entry)
-                    
-                    print (BColors.makeHeader(entry['post']), '\n', " has a rating of:", BColors.makeBlue(str(round(entry['score'],2))) , entry['rating'], "\n")
+                rateEntries(entries)
+
             # 5 Erase idlist and entries from file
             if command=='5':
                 removeFiles()
@@ -211,16 +218,25 @@ def main():
             if command == '6':
                 entries=list()
                 idlist=list()
-            # c Clear
-            if command =='c':
-                subprocess.call('clear')
-                printHelp()
             # 7 Get Top 10
             if command == '8':
                 for rank,entry in enumerate(getTopTen(entries)):
                     print (rank, entry['title'])
 
+            # P. Print List
+            if command == 'p':
+                if not entries:
+                    print( "Entries Not Populated")
+                for result in entries:
+                        print(BColors.makeRed(result['username']) + ":")
+                        print(result['post'])
+                        print(BColors.makeGreen(result['soundcloudLink']) + '\n')
+                print(BColors.makeGreen(str(len(entries))), "entries printed out.")
 
+            # c Clear
+            if command =='c':
+                subprocess.call('clear')
+                printHelp()
 
 
 if __name__ == '__main__':
