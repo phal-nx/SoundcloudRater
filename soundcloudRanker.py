@@ -52,7 +52,7 @@ def makeEntry(track, username, post, post_id):
         sctracktype = track.track_type
         soundcloudLink = track.permalink_url
         sc_id = track.id
-        date = datetime.now() 
+        date = 0  # datetime.now() 
         artwork_url = track.artwork_url
         # To implement at the web level
         # purchase_url = track.purchase_url

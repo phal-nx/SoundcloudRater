@@ -1,18 +1,23 @@
-from flask import Flask
-from flask import request
-from flask import render_template
-import soundcloudRanker
+from flask import Flask, url_for, request, render_template
+from flask_bootstrap import Bootstrap
+from soundcloudRanker import *
 
+
+#stylePage = url_for('static', filename='style.css')
 app = Flask(__name__)
-stylePage = url_for('static', filename='style.css')
+Bootstrap(app)
+
+
 
 @app.route('/')
-def mainPage():
-    return 'Hello World!'
+def mainPage(entries=None):
+    return render_template('songs.html', entries= getAllEntries())
+
 
 @app.route('/songs/<songid>')
 def songs(songid=None):
     return render_template('songs.html', songid=songid)
+
 
 @app.route('/actions', methods=['GET', 'POST'])
 def action():
@@ -32,3 +37,4 @@ url_for('songs', songid='592')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
+

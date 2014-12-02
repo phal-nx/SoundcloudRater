@@ -1,0 +1,18 @@
+<!doctype html>
+{% extends "bootstrap/base.html" %}
+<title>Hello from Flask</title>
+
+<div class = allsongs>
+    {% block content %}
+    <ul class=entries>
+    {% for entry in entries %}
+    <li> <img src= {{entry.artwork}} ><a href="{{entry.soundcloudLink}}">{{ entry.title }}<a>{{ entry.text|safe }}
+                <br><p>Uploaded by {{ entry.username }}</p>
+
+        
+    {% else %}
+        <em>Unbelievable.  No entries here so far</em>
+    {% endfor %}
+    </ul>
+</div>
+{% endblock %}

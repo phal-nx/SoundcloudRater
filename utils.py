@@ -14,7 +14,7 @@ entriesfilename = 'entries.txt'
 logging.basicConfig(level= logging.INFO, filename='messages.log')
 TOLERANCE = 0.1
 SONGSTOASSESS = 50
-epoch = datetime(1970, 1, 1)
+#epoch = datetime(1970, 1, 1)
 
 
 '''
