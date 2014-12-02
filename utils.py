@@ -1,3 +1,4 @@
+from operator import itemgetter
 from textblob import TextBlob
 from bcolors import BColors
 from math import log
@@ -170,7 +171,7 @@ def getAllEntries(entries=[]):
     if not readEntries:
         print(BC.makeGreen("No entries in file"))
     print(BC.makeError(str(len(allEntries))), "entries added")
-    return allEntries + entries
+    return sorted(allEntries+entries, key=itemgetter('count'),reverse=True) 
     #while(not repeatedEntries.empty()):  # Aquire all duplicate songs
     #    repeatedEntry = repeatedEntries.get()
     #allEntries['repeatedEntry]['count'] += 1

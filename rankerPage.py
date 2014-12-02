@@ -1,11 +1,9 @@
 from flask import Flask, url_for, request, render_template
-from flask_bootstrap import Bootstrap
 from soundcloudRanker import *
 
 
 #stylePage = url_for('static', filename='style.css')
 app = Flask(__name__)
-Bootstrap(app)
 
 
 
