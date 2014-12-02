@@ -154,7 +154,7 @@ Output: Returns all entries in file and RAM
 '''
 def getAllIDs(ids=[]):
     readIDs = readinIDs()
-    allIDs = [ID for ID in readIDs if ID not in ids]
+    allIDs = [ID.strip() for ID in readIDs if ID not in ids]
     return allIDs + ids
 
 '''
@@ -182,7 +182,7 @@ Outputs all the IDs to a file to avoid duplicate results
 def outputIDsToFile(entries):
         infile = open(idfilename,"a")
         for entry in entries:
-                infile.write(str(entry['id'])+'\n')
+                infile.write(str(entry['userID'])+str(entry['soundcloudLink']+'\n'))
         infile.close()
                                 
 

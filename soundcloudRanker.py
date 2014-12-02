@@ -45,7 +45,7 @@ TODO: Implement count
 '''
 
 
-def makeEntry(track, username, post, post_id):
+def makeEntry(track, username,userID, post, post_id):
         sctitle = track.title
         scuser = track.user['username']
         sctrackduration = track.duration
@@ -58,7 +58,7 @@ def makeEntry(track, username, post, post_id):
         # purchase_url = track.purchase_url
         # download_url = track.download_url
         # if isinstance(sctracktype,str) and ( sctracktype == "original" or sctracktype == "remix"):
-        return{'username': username, 'post': post, 'id': post_id,
+        return{'username': username, 'userID':userID, 'post': post, 'id': post_id,
                'soundcloudLink': soundcloudLink, 'user': scuser,
                'title': sctitle, 'duration': sctrackduration,
                'tracktype': sctracktype, 'scid': sc_id, 'count': 1,
@@ -87,6 +87,8 @@ def populateList():
 
         for thread in threads:
                 thread.join()
+       
+
         
         songList = entryQueue
         return songList
@@ -96,37 +98,39 @@ Extracts info and makes an entry in the queue
 from the inputted list of twitter posts
 '''
 def resolveEntry(results, entry):
-        global requestcount
-        for url in entry["entities"]["urls"]:
-            if(checkEntry(url['expanded_url'])):
-                    requestcount += 1
-                    postid = entry["id"]
+    global requestcount
+    for url in entry["entities"]["urls"]:
+        if(checkEntry(url['expanded_url'])):
+                requestcount += 1
+                postid = entry["id"]
+                try:
+                    username = entry["user"]["name"]
+                    userID = entry["user"]["id_str"]
+                except KeyError:
+                    logging.warning('Couldnt store username at %s' % username)
+                except TypeError:
+                    logging.warning(entry['user'])
+                try:
+                    post = sanitizeEntry(entry["text"])  # Remove non ASCII characters
+                except KeyError:
                     try:
-                        username = entry["user"]["name"]
+                        post = sanitizeEntry(entry['post'])
                     except KeyError:
-                        logging.warning('Couldnt store username at %s' % username)
-                    except TypeError:
-                        logging.warning(entry['user'])
-                    try:
-                        post = sanitizeEntry(entry["text"])  # Remove non ASCII characters
-                    except KeyError:
+                        logging.warning("Couldnt resolve entry at entry['text'] %s" % str( entry))
+                soundcloudLink = url["expanded_url"].split('?')[0] # Set the soundcloud link to be everything before a question mark
+                track = getTrackInfo(soundcloudLink)
+                if track is not False:
+                    if not songExists():  # If the song is unique in the database
                         try:
-                            post = sanitizeEntry(entry['post'])
-                        except KeyError:
-                            logging.warning("Couldnt resolve entry at entry['text'] %s" % str( entry))
-                    soundcloudLink = url["expanded_url"].split('?')[0] # Set the soundcloud link to be everything before a question mark
-                    track = getTrackInfo(soundcloudLink)
-                    if track is not False:
-                        if not songExists():  # If the song is unique in the database
-                            try:
-                                entry = makeEntry(track, username, post, postid)
-                                logging.info(BColors.makeRed(entry['user']) + ":\t"
-                                            + BColors.makeBlue(entry['title']))
-                                entryQueue.put(entry)
-                            except AttributeError:
-                                    logging.warning(BColors.makeError('ERROR: SONG NOT FOUND %s' % soundcloudLink))     
-                        else:
-                            repeatedEntries.put(track['user']+'\t'+track['title'])
+                            entry = makeEntry(track, username, userID, post, postid)
+                            logging.info(BColors.makeRed(entry['user']) + ":\t"
+                                        + BColors.makeBlue(entry['title']))
+                            entryQueue.put(entry)
+                        except AttributeError:
+                                logging.warning(BColors.makeError('ERROR: SONG NOT FOUND %s' % soundcloudLink))     
+                    else:
+                        repeatedEntries.put(track['soundcloudLink'])
+    
 
 '''
 Input:None
@@ -163,18 +167,21 @@ def populateEntries(existingIDs):
     searchQuery = populateList()
     entriesToAdd = list()
     idlistToAdd = list()
+    repeatLinks = list()
     # Print each entry in the queue and populate a list called entries
     while(not searchQuery.empty()):
         result = searchQuery.get()
-        if(result['id'] not in existingIDs):
+        #It is a duplicate if a user links to the same song multiple times
+        if(str(result['userID'])+str(result['soundcloudLink']) not in existingIDs):
             entriesAdded+= 1
             entriesToAdd.append(result)
-            idlistToAdd.append(result['id'])
+            idlistToAdd.append(str(result['user'])+str(result['soundcloudLink']))
         else:
             repeatEntries+=1
     #pdb.set_trace()
     print(BColors.makeGreen(str(entriesAdded)), "entries added from Twitter Query. Total entries in RAM + File:", BColors.makeRed(str(entriesAdded+len(existingIDs))))
     print(BColors.makeRedText(str(repeatEntries)), "duplicate entries")
+    
     return entriesToAdd, idlistToAdd
 
 
@@ -203,6 +210,12 @@ def main():
                 ents,ids = populateEntries(idlist)
                 entries += ents
                 idlist += ids
+                while(not repeatedEntries.empty()):
+                    repeat = repeatedEntries.get()
+                    for entry in entries:
+                        if repeat == entry['soundcloudLink']:
+                            entry['count']+=1
+                
                 '''
                 entriesAdded=0
                 repeatEntries=0
