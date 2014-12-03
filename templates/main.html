@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Soundcloud Ranker</title>
+        <link href="/static/css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <link href="/static/css/bootstrap-responsive.css" rel="stylesheet">
+        <script src="http://code.jquery.com/jquery-latest.js"></script>
+        <script src="/static/js/bootstrap.min.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    </div>
+    <body>
+        <div class="navbar navbar-default navbar-fixed-top"> 
+            <div class=container>
+                <div class="navbar-header">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <a class="navbar-brand" href="{{url_for('mainPage')}}"> Soundcloud Ranker </a>
+                </div>
+                <div class="navbar-collapse navbar-responsive-collapse collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li> <p class="navbar-brand"> Find out what's hot online &nbsp </p></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    <div class=container>
+        <div class=page-header id=banner>
+            <div class=row>
+                <div class="col-lg-6 col-lg-offset-4">
+                    <br>
+                        <h1 id="songs">Soundcloud Ranker</h1>
+                </div>
+            </div>
+        </div>
+        <div class=bs-docs-section>
+        <div class=row>
+            <div class="col-lg-5  "> 
+                <div class=page-header>
+                    <h3>Top Ten:</h3>
+                </div> 
+                <div class="bs-component">
+                    <table class="table table-striped table-hover ">
+                        <thead>
+                           <tr>
+                             <th><b>#</b></th>
+                             <th>Artwork</th>
+                             <th>Song Name</th>
+                             <th>Uploader</th>
+                             <th>Score</th>
+                           </tr>
+                        </thead>
+                        {% set i = 1 %}
+                {% for entry in entries[0:10] %}
+                        <tbody>
+                            <tr>
+                                <td><h3>{{ i }} </h3</td>
+                                 <td><img align=left class=img-thumbnail src= {{entry.artwork}} onerror="this.src='static/images/default.jpg'"></td>
+                                 <td><a href="{{ url_for('song', songid=entry.scid)}}">{{ entry.title }}</a>{{ entry.text|safe}}</td>
+                                 <!-- <td><a href="{{entry.soundcloudLink}}">{{ entry.title }}</a>{{ entry.text|safe}}</td>-->
+                                 <td>{{ entry.user }}</td>
+                                 {% if entry.score != 0 %}
+                                 <td>{{ ((entry.score*5)+5)|round(2) }}/10</td>
+                                 {% else %}
+                                 <td>No score</td>
+                                 {% endif %}
+                           </tr> 
+                           {% set i = i+ 1 %}
+                {% else %}
+                    <em>Unbelievable.  No entries here so far</em>
+                {% endfor %}
+            </table>        
+            
+       </div>
+            </div>
+            <div class="col-lg-5 col-lg-offset-2">
+                <div class=page-header>
+                    <div class=statistics>
+                        <h3>Statistics</h3>
+                    </div>
+                </div>
+                <div id=stats>
+                    <p class = lead><b>Total Entries:</b> {{ entries|length }}</p>
+                    {% set highestEntry = getHighestCount() %}
+                    <p class=lead>Top 3 Highest Counts:</p> 
+                    <ul class="nav nav-pills nav-stacked">
+                        {% for entry in highestEntry %}
+                        <li class="active"><a href={{ url_for('song', songid=entry['scid'])}}><span class="badge">{{entry.count}}</span> {{entry.title}}</a></li>
+                        {%endfor%}
+                </ul>
+                </div> 
+                <div class=page-header>
+                    <h3><a href={{ url_for('songsPage') }}>All Songs</a></h3>
+                </div> 
+                <div class="bodycontainer">    
+                <table class="table table-striped table-hover ">
+                        <thead>
+                           <tr>
+                             <th>Song Name</th>
+                             <th>Uploader</th>
+                             <th>Count</th>
+                           </tr>
+                        </thead>
+                {% for entry in entries %}
+                        <tbody>
+                            <tr>
+                                 <td><a href="{{entry.soundcloudLink}}">{{ entry.title }}</a>{{ entry.text|safe}}</td>
+                                 <td>{{ entry.user }}</td>
+                                <td><span class="badge">{{entry.count}}</span></td> 
+                           </tr> 
+                {% else %}
+                    <em>Unbelievable.  No entries here so far</em>
+                {% endfor %}
+            </table>
+            </div>
+            </div>
+            </div>
+        </div>
+    </div>
+    </body>
+</html>

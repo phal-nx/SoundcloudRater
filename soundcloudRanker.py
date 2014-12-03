@@ -38,6 +38,11 @@ def getTrackInfo(trackURL):
             logging.info(BColors.makeError("Track Not Found: %s" % trackURL))
             return False
         return track
+'''Input: Takes songid
+Gets song at that id
+'''
+def getEntry(songid):
+    return [item for item in getAllEntries() if str(item['scid']) == songid][0]
 
 '''Input: Track, twitter username, post, soundcloudLink and post_id
 Returns a dictionary to append to the list if it works

@@ -37,6 +37,11 @@ def hot(score, date):
     seconds = epoch_seconds(date) - 1134028003
     return round(order + sign * seconds / 45000, 7)
 
+'''
+Get highest count value
+'''
+def getHighestCount():
+    return sorted(getAllEntries(), key=itemgetter('count'),reverse=True)[:3]
 
 '''
 Input: None
@@ -59,7 +64,7 @@ Return list with top 10 songs
 TODO
 '''
 def getTopTen(allEntries):
-    sortedList = sorted(allEntries, key=itemgetter('count')) 
+    sortedList = sorted(allEntries, key=itemgetter('count'),reverse=True) 
     topten=list()
     for i in range(SONGSTOASSESS):
         topEntries.append(sortedList[i])

@@ -16,7 +16,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
-                    <a class="navbar-brand" href="#"> Soundcloud Ranker </a>
+                    <a class="navbar-brand" href="{{url_for('mainPage')}}"> Soundcloud Ranker </a>
                 </div>
                 <div class="navbar-collapse navbar-responsive-collapse collapse">
                     <ul class="nav navbar-nav navbar-right">
@@ -49,8 +49,8 @@
                 {% for entry in entries %}
                         <tbody>
                             <tr>
-                                 <td><img align=left src= {{entry.artwork}} onerror="this.src='static/images/default.jpg'"></td>
-                                 <td><a href="{{entry.soundcloudLink}}">{{ entry.title }}</a>{{ entry.text|safe}}</td>
+                                <td><img align=left class=img-thumbnail src= {{entry.artwork}} onerror="this.src='../static/images/default.jpg'"></td>
+                                 <td><a href="{{ url_for('song', songid=entry.scid) }}">{{ entry.title }}</a>{{ entry.text|safe}}</td>
                                  <td>{{ entry.user }}</td>
                                 <td><span class="badge">{{entry.count}}</span></td> 
                            </tr> 
