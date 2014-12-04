@@ -4,11 +4,14 @@ import queue
 import threading
 import logging
 import subprocess
+import sys
+import os
 from datetime import datetime
 from operator import itemgetter
 from twython import Twython
 from bcolors import BColors
 from utils import *
+
 
 BColors = BColors()
 # GLOBAL VARIABLES
@@ -36,7 +39,7 @@ def getTrackInfo(trackURL):
         try:
             track = SCClient.get('/resolve', url=trackURL)
         except:
-            logging.info(BColors.makeError("Track Not Found: %s" % trackURL))
+            logging.info(BColors.makeError("Track Not Found: %s\n" % trackURL))
             return False
         return track
 '''Input: Takes songid
@@ -130,7 +133,7 @@ def resolveEntry(results, entry):
                         try:
                             entry = makeEntry(track, username, userID, post, postid)
                             logging.info(BColors.makeRed(entry['user']) + ":\t"
-                                        + BColors.makeBlue(entry['title']))
+                                        + BColors.makeBlue(entry['title']+'\n'))
                             entryQueue.put(entry)
                         except AttributeError:
                                 logging.warning(BColors.makeError('ERROR: SONG NOT FOUND %s' % soundcloudLink))     
@@ -291,3 +294,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+else:
+    f = open(os.devnull, 'w')
+    sys.stdout = f
