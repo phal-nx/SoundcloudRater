@@ -20,7 +20,8 @@ entryQueue = queue.Queue()
 repeatedEntries = queue.Queue()
 # Setup soundcloud client
 SCClient = soundcloud.Client(client_id='fc2d2bb48658c6612489eed9aaa88dc4')
-logging.basicConfig(filename='messages.log')
+logging.basicConfig(filename='messages.log',level=logging.DEBUG)
+
 
 class NotATrack(Exception):
     pass

@@ -1,0 +1,35 @@
+
+        <div class="navbar navbar-default navbar-fixed-top"> 
+            <div class=container>
+                <div class="navbar-header">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <a class="navbar-brand" href="{{url_for('mainPage')}}"> Soundcloud Ranker </a>
+                </div>
+                <div class="navbar-collapse navbar-responsive-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li>
+                        <a href="htt://github.com/phdrummer/SoundcloudRater">Github </a>
+                        </li>
+                        <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                 <li class="dropdown-header">Actions</li>
+                                 <li><a href="{{url_for('actions')}}?action=update">Force Update</a></li>
+                                 <li><a href="{{url_for('actions')}}?action=delete">Delete Entries</a></li>
+                                 <li><a href="{{url_for('actions')}}?action=rate">Re-rate existing Entries</a></li>
+                                 <li class="divider"></li>
+                                 <li class="dropdown-header">Files</li>
+                                 <li><a href="{{url_for('display')}}?file=entries">Entries</a></li>
+                                 <li><a href="{{url_for('display')}}?file=ids">IDs</a></li>
+                                 <li><a href="{{url_for('display')}}?file=logs">Logs</a></li>
+                             </ul>
+                       </li>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li> <p class="navbar-brand"> Find out what's hot online &nbsp </p></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
