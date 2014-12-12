@@ -91,7 +91,7 @@
                 {% for entry in entries %}
                         <tbody>
                             <tr>
-                                 <td><a href="{{entry.soundcloudLink}}">{{ entry.title }}</a>{{ entry.text|safe}}</td>
+                                 <td><a href="{{ url_for('song', songid=entry['scid'])}}">{{ entry.title }}</a>{{ entry.text|safe}}</td>
                                  <td>{{ entry.user }}</td>
                                 <td><span class="badge">{{entry.count}}</span></td> 
                            </tr> 

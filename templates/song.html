@@ -25,6 +25,12 @@
             <div class="col-md-10 col-md-offset-1"> 
                                 <span class="badge">{{entry.count}}</span>
                                 <iframe width="100%" height="166" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/{{entry.scid}}&color=0066cc"></iframe> 
+        <h4> Tweet: </h4><p> {{ entry.post }}</p> 
+        <h4> Score: </h4><p> {{ entry.score }}</p> 
+        <h4> User: </h4><p> {{ entry.userID }}</p> 
+        <h4> Post ID: </h4><p> {{ entry.id }}</p> 
+        <h4> Date: </h4><p> TBD </p> 
+
                 {% if not entry %}
                     <em>No Entry Found</em>
                 {% endif %}

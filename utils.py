@@ -113,14 +113,6 @@ def rate2(track):
 
 
 
-'''Input: None
-Removes files from Disk
-'''
-
-def removeFiles():
-    open(idfilename, 'w').close()
-    open(entriesfilename, 'w').close()
-
 
 '''Input: Takes the expanded Soundcloud URL
 Returns whether or not link is valid
@@ -167,15 +159,15 @@ Input: entries (optional)
 Output: Returns all entries in file and RAM
 '''
 def getAllEntries(entries=[]):        
-    if not entries:
-        print(BC.makeBlue("No entries are currently in RAM. All will be from File"))
+    #if not entries:
+        #print(BC.makeBlue("No entries are currently in RAM. All will be from File"))
     
     readEntries = readInEntries()
     allEntries = [entry for entry in readInEntries() if entry not in entries]  # Returns list of all current and past entries (list)
     
-    if not readEntries:
-        print(BC.makeGreen("No entries in file"))
-    print(BC.makeError(str(len(allEntries))), "entries added")
+    #if not readEntries:
+        #print(BC.makeGreen("No entries in file"))
+    #print(BC.makeError(str(len(allEntries))), "entries added")
     return sorted(allEntries+entries, key=itemgetter('count'),reverse=True) 
     #while(not repeatedEntries.empty()):  # Aquire all duplicate songs
     #    repeatedEntry = repeatedEntries.get()
@@ -237,9 +229,11 @@ whether by identical URL or similar Artist / Track
 '''
 
 
-def songExists():
+def songExists(track,entries):
+    for currentEntry in entries:
+        if track == currentEntry['soundcloudLink']:
+            return True
     return False
-    #return (song in database)
        
 '''Input: None
 Outputs Help info
@@ -247,13 +241,10 @@ Outputs Help info
 
 def printHelp(): 
         print(BC.makeRed("\nSoundcloud Ranker v 0.1. Phil Leonowens\n"))
-        print(BC.makeRedText("1.)")," query twitter for entries")
-        print(BC.makeRedText('2.)')," Read in entries from File")
-        print(BC.makeRedText('3.)'),' output entries to file')
-        print(BC.makeRedText('4.)'),' rate current entries')
-        print(BC.makeRedText('5.)'),' remove entries file and idlist file')
-        print(BC.makeRedText('6.)'),' clear entries and idlist from RAM')
-        print(BC.makeRedText('7.)'),' print top 10')
+        print(BC.makeRedText('1.)'),' query twitter for entries')
+        print(BC.makeRedText('2.)'),' re-rate current entries')
+        print(BC.makeRedText('3.)'),' remove entries file and idlist file')
+        print(BC.makeRedText('4.)'),' print top 10')
        
         print(BC.makeGreen('p)'),' print list of entries')
         print(BC.makeGreen('c)'),' clear')
