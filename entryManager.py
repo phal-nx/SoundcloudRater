@@ -52,6 +52,13 @@ class entryManager:
     '''
     def getEntry(self, songid):
         return [item for item in self.getEntries() if str(item['scid']) == songid][0]
+   
+    '''Input: Takes songid as identifier
+    Increments count at that id
+    '''
+    def incrementCount(self, songid):
+        self.getEntry(songid)['count']+=1
+    
     
     '''Input: Track, twitter username, post, soundcloudLink and post_id
     Returns a dictionary to append to the list if it works
@@ -197,7 +204,8 @@ class entryManager:
                                 logging.warning(BColors.makeError('ERROR: SONG NOT FOUND %s' % soundcloudLink))     
                     else:
                         try:
-                            repeatedEntries.put(track.permalink_url)
+                            incrementCount(track.permalink_url)
+                            #repeatedEntries.put(track.permalink_url)
                         except:
                             logging.warning(BColors.makeError('PERMALINK NOT FOUND: %s' % track.title))
 
@@ -312,17 +320,12 @@ class entryManager:
 
     def outputEntriesToFile(self):
             infile =  open(self.entriesfilename,"r+") 
-            oldEntries= self.readInEntries()
             currentEntries = self.getEntries()
             #if os.stat(self.entriesfilename)[6] != 0: #  If content in file
             try:
-                if oldEntries:
-                    infile.seek(0)  # Seek to the beginning in order to overwrite not append
-                    infile.write(str(oldEntries + currentEntries))  # Append if something exists
-                else:
-                    logging.info("No old files")
-                    infile.seek(0)
-                    infile.write(str(currentEntries))  # If empty then create
+                logging.info("No old files")
+                infile.seek(0)
+                infile.write(str(currentEntries))  # If empty then create
                 logging.info("Outputted entries to  %s succesfully" % self.entriesfilename)
                 print("Outputted entries to  %s succesfully" % BC.makeRed(self.entriesfilename))
                 infile.close()
