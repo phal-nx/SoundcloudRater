@@ -3,6 +3,7 @@ import threading
 import logging
 import os
 import soundcloud
+import pdb
 from utils import *
 from bcolors import BColors
 from operator import itemgetter
@@ -43,7 +44,8 @@ class entryManager:
     def removeFiles(self):
         open(idfilename, 'w').close()
         open(entriesfilename, 'w').close()
-
+        self.entries=list()
+        self.idlist=list()
 
     '''Input: Takes songid
     Gets song at that id
@@ -123,23 +125,22 @@ class entryManager:
     '''
 
 
-    def populateList(self):
+    def queryTwitter(self):
         # App key and secret found by registering Twitter App
         APPSECRET = "CPMs6yeXwWRqV5Yow7QmOVZzfouC2UOT1AIykCZKYwBzuUrw0b"
         APPKEY = 'ngJbJ1mb6uHR0oZvTO5QjPUtz'
         twitter = Twython(APPKEY, APPSECRET)
         results = twitter.search(q=self.QUERY, lang='en', count=self.QUERYLENGTH)  # since_id =  currentID
-        
+        #pdb.set_trace() 
+        resultsStatuses = {v['id']:v for v in results['statuses']}.values()
         # Threading is efficient because we're waiting on api requests 
-        threads = [threading.Thread(target=self.resolveEntry, args=(results, entry)) 
-                  for entry in results["statuses"]]  # Thread Pool Generator
+        threads = [threading.Thread(target=self.resolveEntry, args=(entry,)) 
+                  for entry in resultsStatuses]  # Thread Pool Generator
         for thread in threads:
             thread.start()
 
         for thread in threads:
                 thread.join()
-       
-
         
         songList = entryQueue
         return songList
@@ -162,8 +163,8 @@ class entryManager:
     Extracts info and makes an entry in the queue
     from the inputted list of twitter posts
     '''
-    def resolveEntry(self,results, entry):
-        allEntries = self.getAllEntries()
+    def resolveEntry(self,entry):
+        allEntries = self.getEntries()
         requestcount=0
         for url in entry["entities"]["urls"]:
             if(checkEntry(url['expanded_url'])):
@@ -231,7 +232,7 @@ class entryManager:
     def populateEntries(self): 
         entriesAdded=0
         repeatEntries=0
-        searchQuery = self.populateList()
+        searchQuery = self.queryTwitter()
         entriesToAdd = list()
         idlistToAdd = list()
         repeatLinks = list()
