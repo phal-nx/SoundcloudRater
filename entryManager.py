@@ -36,10 +36,8 @@ class entryManager:
         allEntries = [entry for entry in readEntries if entry not in self.entries]  
         return sorted(allEntries + self.entries, key=itemgetter('count'),reverse=True) 
 
-
-    '''Input: None
-    Removes files from Disk
-    '''
+    def sortEntries(self):
+        self.entries = sorted(self.entries, key=itemgetter('count'),reverse=True) 
 
     def removeFiles(self):
         open(idfilename, 'w').close()
@@ -62,7 +60,8 @@ class entryManager:
     '''
     def incrementCount(self, songid):
         self.getEntry(songid)['count']+=1
-        print('Count incremented to %s' % self.getEntry(songid)['count']) 
+        print('Count incremented to %s' % self.getEntry(songid)['count'])
+        self.outputEntriesToFile() #update entries count
     
     '''Input: Track, twitter username, post, soundcloudLink and post_id
     Returns a dictionary to append to the list if it works
@@ -283,17 +282,16 @@ class entryManager:
     def getTopTen(self):
         sortedList = sorted(self.getEntries(), key=itemgetter('count'),reverse=True) 
         topten=list()
+        topEntries = list()
         for i in range(SONGSTOASSESS):
             topEntries.append(sortedList[i])
-        try:
-            for entry in topEntries:
-                entryDate = entry['date']
-                entryScore = entry['score']
-                entry['hot'] = hot(entryScore, entryDate)
-        except:
-            print(BC.makeError("You must rate all tracks first"))
-            return list()
-        topTen = sorted(topEntries, key=itemgetter('hot'))[:10]
+        #try:
+        for entry in topEntries:
+            entryDate = entry['date']
+            entryScore = entry['score']+5
+            entry['hot'] = hot(entryScore, entryDate)
+            topTen = sorted(topEntries, key=itemgetter('hot'))[:10]
+        #topTen = sorted(self.getEntries(), key=itemgetter('score'),reverse=True)[:10]
         return topTen
 
     '''Input: A Track

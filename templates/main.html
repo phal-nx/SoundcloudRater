@@ -33,12 +33,12 @@
                              <th><b>#</b></th>
                              <th>Artwork</th>
                              <th>Song Name</th>
-                             <th>Uploader</th>
-                             <th>Score</th>
+                             <th><abbr title="Soundcloud user who uploaded the song">Uploader</abbr></th>
+                             <th><abbr title="5 is neutral. Higher is positive">Score</abbr></th>
                            </tr>
                         </thead>
                         {% set i = 1 %}
-                {% for entry in entries[0:10] %}
+                {% for entry in topTen %}
                         <tbody>
                             <tr>
                                 <td><h3>{{ i }} </h3</td>
@@ -49,7 +49,7 @@
                                  {% if entry.score != 0 %}
                                  <td>{{ ((entry.score*5)+5)|round(2) }}/10</td>
                                  {% else %}
-                                 <td>No score</td>
+                                 <td>5/10</td>
                                  {% endif %}
                            </tr> 
                            {% set i = i+ 1 %}

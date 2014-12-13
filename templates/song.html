@@ -24,10 +24,11 @@
         <div class=row>
                 {% if entry %}
             <div class="col-md-10 col-md-offset-1"> 
-                            <span class="badge">{{entry.count}}</span>
+                <span class="badge">{{entry.count}}</span>
+                <a href=" {{ url_for('actions', action='increment',songid=entry.scid) }}"<span class="badge">+</span></a>
                                 <iframe width="100%" height="166" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/{{entry.scid}}&color=0066cc"></iframe> 
                                 <div class=container>
-                                    <h4> User: </h4><p> {{ entry.user }}</p> 
+                                    <h4> User: </h4><p> {{ entry.username }}</p> 
                                     <h4> Tweet: </h4><p> {{ entry.post }}</p> 
                                 <h4> Score: </h4><p> {{ entry.score }}</p> 
                                 <h4> Post ID: </h4><p> {{ entry.id }}</p> 

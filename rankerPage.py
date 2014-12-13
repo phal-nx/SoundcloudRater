@@ -12,10 +12,11 @@ app.jinja_env.globals['include_raw'] = lambda filename : Markup(app.jinja_loader
 
 @app.route('/')
 def mainPage(entries=None):
-    return render_template('main.html', entries= entryManager.getEntries())
+    return render_template('main.html', entries= entryManager.getEntries(), topTen = entryManager.getTopTen())
 
 @app.route('/songs/')
 def songsPage(entries=None):
+    entryManager.sortEntries()
     return render_template('songs.html', entries= entryManager.getEntries())
 
 
@@ -33,7 +34,8 @@ def actions():
            entryManager.removeFiles() 
         if (request.args.get('action') == 'rate'):
            entryManager.rateEntries()
-           print("WORKED")
+        if (request.args.get('action') == 'increment'):
+           entryManager.incrementCount(request.args.get('songid'))
         else:
             error = 'No actions'
     return redirect(request.referrer)

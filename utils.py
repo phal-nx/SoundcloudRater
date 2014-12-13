@@ -7,7 +7,7 @@ import logging
 import re
 import requests
 import os
-
+import time
 
 BC = BColors()
 idfilename = 'ids.txt'
@@ -15,16 +15,8 @@ entriesfilename = 'entries.txt'
 logging.basicConfig(level= logging.INFO, filename='messages.log')
 TOLERANCE = 0.1
 SONGSTOASSESS = 50
-#epoch = datetime(1970, 1, 1)
+epoch = datetime(1970, 1, 1)
 
-
-'''
-Input: A Date
-Returns the number of seconds from the epoch to date.
-'''
-def epoch_seconds(date):
-    td = date - epoch
-    return td.days * 86400 + td.seconds + (float(td.microseconds) / 1000000)
 
 
 '''The hot formula. Should match the equivalent function in postgres.
@@ -34,7 +26,7 @@ Output: Hot score
 def hot(score, date):
     order = log(max(abs(score), 1), 10)
     sign = 1 if score > 0 else -1 if score < 0 else 0
-    seconds = epoch_seconds(date) - 1134028003
+    seconds = int(time.time()) - 1417392000  # Time since epoch minus Dec 01 2014
     return round(order + sign * seconds / 45000, 7)
 
 '''
@@ -59,25 +51,6 @@ def getWordValues():
         return wordValues
 
 
-'''Input: AllEntries
-Return list with top 10 songs
-TODO
-'''
-def getTopTen(allEntries):
-    sortedList = sorted(allEntries, key=itemgetter('count'),reverse=True) 
-    topten=list()
-    for i in range(SONGSTOASSESS):
-        topEntries.append(sortedList[i])
-    try:
-        for entry in topEntries:
-            entryDate = entry['date']
-            entryScore = entry['score']
-            entry['hot'] = hot(entryScore, entryDate)
-    except:
-        print(BC.makeError("You must rate all tracks first"))
-        return list()
-    topTen = sorted(topEntries, key=itemgetter('hot'))[:10]
-    return topTen
 
 '''Input: A Track
 The rating of a track

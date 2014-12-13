@@ -29,6 +29,7 @@
                              <th>Artwork</th>
                              <th>Song Name</th>
                              <th>Uploader</th>
+                             <th>Score</th>
                              <th>Count</th>
                            </tr>
                         </thead>
@@ -38,26 +39,22 @@
                                 <td><img align=left class=img-thumbnail src= {{entry.artwork}} onerror="this.src='../static/images/default.jpg'"></td>
                                  <td><a href="{{ url_for('song', songid=entry.scid) }}">{{ entry.title }}</a>{{ entry.text|safe}}</td>
                                  <td>{{ entry.user }}</td>
-                                <td><span class="badge">{{entry.count}}</span></td> 
+
+                                 {% if entry.score != 0 %}
+                                 <td>{{ ((entry.score*5)+5)|round(2) }}/10</td>
+                                 {% else %}
+                                 <td>5/10</td>
+                                 {% endif %}
+
+                                 <td><span class="badge">{{entry.count}}</span>
+                                     <a href="{{ url_for('actions', action='increment', songid=entry.scid) }}"><span class="badge">+</span</a>
+                                 </td> 
                            </tr> 
                 {% else %}
                     <em>Unbelievable.  No entries here so far</em>
                 {% endfor %}
                 
             
-           <!-- 
-                <ul class="list-group">
-                {% for entry in entries %} 
-                   <li class="list-group-item">
-                        <span class="badge">{{entry.count}}</span>       
-                        <img align=left src= {{entry.artwork}} onerror="this.src='static/images/default.jpg'">
-                        <br><br> <a href="{{entry.soundcloudLink}}">{{ entry.title }}</a>{{ entry.text|safe }}
-                        <p >Uploaded by {{ entry.username }}</p>
-                    </li>
-                {% endfor %}
-            
-                </ul>
-                -->
             </div>
         </div>
     </div>
