@@ -15,7 +15,7 @@ repeatedEntries = queue.Queue
 
 class entryManager:
     
-    QUERY = "soundcloud.com/"
+    QUERY = "//soundcloud.com/"
     QUERYLENGTH = 1000
     # Setup soundcloud client
     SCClient = soundcloud.Client(client_id='fc2d2bb48658c6612489eed9aaa88dc4')
@@ -51,14 +51,18 @@ class entryManager:
     Gets song at that id
     '''
     def getEntry(self, songid):
-        return [item for item in self.getEntries() if str(item['scid']) == songid][0]
-   
+        try:
+            return [item for item in self.getEntries() if item['scid'] == int(songid)][0]
+        except:
+            print("Couldn't find entry at %s" % type(songid))
+            return None
+
     '''Input: Takes songid as identifier
     Increments count at that id
     '''
     def incrementCount(self, songid):
         self.getEntry(songid)['count']+=1
-    
+        print('Count incremented to %s' % self.getEntry(songid)['count']) 
     
     '''Input: Track, twitter username, post, soundcloudLink and post_id
     Returns a dictionary to append to the list if it works
@@ -193,8 +197,8 @@ class entryManager:
                         logging.warning("Couldnt resolve entry at entry['text'] %s" % str( entry))
                 soundcloudLink = url["expanded_url"].split('?')[0] # Set the soundcloud link to be everything before a question mark
                 track = self.getTrackInfo(soundcloudLink)
-                if track:
-                    if not self.songExists(track.permalink_url):  # If the song is unique in the database
+                if track: 
+                    if not self.songExists(track.id):  # If the song is unique in the database
                         try:
                             entry = self.makeEntry(track, username, userID, post, postid)
                             logging.info(BColors.makeRed(entry['user']) + ":\t"
@@ -204,10 +208,9 @@ class entryManager:
                                 logging.warning(BColors.makeError('ERROR: SONG NOT FOUND %s' % soundcloudLink))     
                     else:
                         try:
-                            incrementCount(track.permalink_url)
-                            #repeatedEntries.put(track.permalink_url)
+                            incrementCount(track.id)
                         except:
-                            logging.warning(BColors.makeError('PERMALINK NOT FOUND: %s' % track.title))
+                            logging.warning(BColors.makeError('Song ID not found: %s' % track.id))
 
 
     '''
@@ -357,7 +360,7 @@ class entryManager:
 
     def songExists(self, track):
         for currentEntry in self.getEntries():
-            if track == currentEntry['soundcloudLink']:
+            if track == currentEntry['scid']:
                 return True
         return False
 

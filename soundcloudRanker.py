@@ -71,6 +71,9 @@ def main():
             # U Update database (Run Chronologically)
             if command == 'u':
                entryManager.update() 
+            #D DEbug
+            if command == 'd':
+                pdb.set_trace()
 
             # P. Print List
             if command == 'p':
@@ -93,5 +96,6 @@ if __name__ == '__main__':
     entryManager = entryManager() 
     main()
 else:
-    f = open(os.devnull, 'w')
-    sys.stdout = f
+    #f = open(os.devnull, 'w')
+    #sys.stdout = f
+    pass
