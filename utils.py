@@ -24,10 +24,10 @@ Input: Score of entry, date of entry
 Output: Hot score
 '''
 def hot(score, date):
-    order = log(max(abs(score), 1), 10)
-    sign = 1 if score > 0 else -1 if score < 0 else 0
-    seconds = int(time.time()) - 1417392000  # Time since epoch minus Dec 01 2014
-    return round(order + sign * seconds / 45000, 7)
+    order = log(max(abs(score), 1), 10) * 30
+    seconds = int(date -  1417392000)  # Time since epoch minus Dec 01 2014
+    print(order, seconds/45000)
+    return round((order + seconds / 45000), 7)
 
 '''
 Get highest count value

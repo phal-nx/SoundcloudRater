@@ -22,8 +22,12 @@ def songsPage(entries=None):
 
 @app.route('/songs/<songid>')
 def song(songid=None):
-    return render_template('song.html', entry=entryManager.getEntry(songid))
-
+    if songid is not None:
+        try:
+            return render_template('song.html', entry=entryManager.getEntry(songid))
+        except:
+            pass
+    return render_template('songs.html', entries= entryManager.getEntries())
 
 @app.route('/actions', methods=['GET'])
 def actions():
@@ -35,7 +39,7 @@ def actions():
         if (request.args.get('action') == 'rate'):
            entryManager.rateEntries()
         if (request.args.get('action') == 'increment'):
-           entryManager.incrementCount(request.args.get('songid'))
+           entryManager.incrementCount(int(request.args.get('songid')))
         else:
             error = 'No actions'
     return redirect(request.referrer)

@@ -4,10 +4,12 @@ import logging
 import os
 import soundcloud
 import pdb
+import time
 from utils import *
 from bcolors import BColors
 from operator import itemgetter
 from twython import Twython
+
 
 BColors = BColors()
 entryQueue = queue.Queue()
@@ -50,10 +52,11 @@ class entryManager:
     '''
     def getEntry(self, songid):
         try:
+            print(songid)
             return [item for item in self.getEntries() if item['scid'] == int(songid)][0]
         except:
-            print("Couldn't find entry at %s" % type(songid))
-            return None
+            print("Couldn't find entry at %s" % (songid))
+       # return None
 
     '''Input: Takes songid as identifier
     Increments count at that id
@@ -75,7 +78,7 @@ class entryManager:
         sctracktype = track.track_type
         soundcloudLink = track.permalink_url
         sc_id = track.id
-        date = 0  # datetime.now() 
+        date = time.time()  # datetime.now() 
         artwork_url = track.artwork_url
         # purchase_url = track.purchase_url
         # download_url = track.download_url
@@ -113,6 +116,7 @@ class entryManager:
     def update(self):
         ents, ids = self.populateEntries()  # First reads in new entries from twitter
         self.rateEntries(ents)  # Rates those entries
+        ents= list({v['scid']:v for v in ents}.values()) # make unique
         self.entries += ents
         self.idlist += ids
         self.outputIDsToFile()  # Saves idlist to file
@@ -280,17 +284,18 @@ class entryManager:
     TODO
     '''
     def getTopTen(self):
+        SONGSTOASSESS=50
         sortedList = sorted(self.getEntries(), key=itemgetter('count'),reverse=True) 
         topten=list()
         topEntries = list()
-        for i in range(SONGSTOASSESS):
+        for i in range(min(SONGSTOASSESS, len(sortedList))):
             topEntries.append(sortedList[i])
-        #try:
+        
         for entry in topEntries:
             entryDate = entry['date']
             entryScore = entry['score']+5
             entry['hot'] = hot(entryScore, entryDate)
-            topTen = sorted(topEntries, key=itemgetter('hot'))[:10]
+        topTen = sorted(topEntries, key=itemgetter('hot'),reverse=True)[:10]
         #topTen = sorted(self.getEntries(), key=itemgetter('score'),reverse=True)[:10]
         return topTen
 

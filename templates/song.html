@@ -30,7 +30,7 @@
                                 <div class=container>
                                     <h4> User: </h4><p> {{ entry.username }}</p> 
                                     <h4> Tweet: </h4><p> {{ entry.post }}</p> 
-                                <h4> Score: </h4><p> {{ entry.score }}</p> 
+                                <h4> Score: </h4><p> {{ ((entry.score*5)+5)|round(2)  }}/10</p> 
                                 <h4> Post ID: </h4><p> {{ entry.id }}</p> 
                                 <h4> Date: </h4><p> TBD </p> 
                                 </div>

@@ -24,7 +24,7 @@
         <div class=row>
             <div class="col-lg-6  "> 
                 <div class=page-header>
-                    <h3>Top Ten:</h3>
+                    <h3><abbr title="Takes 50 highest count songs then sorts by score">Top Ten:</abbr></h3>
                 </div> 
                 <div class="bs-component" style="overflow: auto">
                     <table class="table table-striped table-hover ">
@@ -91,7 +91,11 @@
                 {% for entry in entries %}
                         <tbody>
                             <tr>
-                                 <td><a href="{{ url_for('song', songid=entry['scid'])}}">{{ entry.title }}</a>{{ entry.text|safe}}</td>
+                                 <td><a href="{{ url_for('song', songid=entry['scid'])}}">{{ entry.title[0:30] }}
+                                         {% if entry.title|length > 30 %}
+                                         ...
+                                         {% endif %}
+                                 </a>{{ entry.text|safe}}</td>
                                  <td>{{ entry.user }}</td>
                                 <td><span class="badge">{{entry.count}}</span></td> 
                            </tr> 
