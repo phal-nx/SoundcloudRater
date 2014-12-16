@@ -144,7 +144,7 @@ class entryManager:
         APPSECRET = "CPMs6yeXwWRqV5Yow7QmOVZzfouC2UOT1AIykCZKYwBzuUrw0b"
         APPKEY = 'ngJbJ1mb6uHR0oZvTO5QjPUtz'
         twitter = Twython(APPKEY, APPSECRET)
-        results = twitter.search(q=self.QUERY, lang='en', count=self.QUERYLENGTH)  # since_id =  currentID
+        results = twitter.search(q=self.QUERY, lang='en', count=self.QUERYLENGTH, result_type='popular')  # since_id =  currentID
         #pdb.set_trace() 
         resultsStatuses = {v['id']:v for v in results['statuses']}.values()
         # Threading is efficient because we're waiting on api requests 
